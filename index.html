@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>G.C.P.A. | TERMINAL ACCESS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Creepster&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #020202;
+            --term-green: #33ff00;
+            --term-red: #ff0000;
+            --term-dim: #003300;
+            --scanline-color: rgba(0, 0, 0, 0.5);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--term-green);
+            font-family: 'Share Tech Mono', monospace;
+            overflow-x: hidden;
+            text-shadow: 0 0 2px var(--term-dim);
+        }
+
+        /* --- CRT & ATMOSPHERE EFFECTS --- */
+        .crt-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .flicker {
+            animation: flicker 0.15s infinite;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.97; }
+            50% { opacity: 1; }
+            100% { opacity: 0.98; }
+        }
+
+        /* --- MARQUEE BANNER --- */
+        .marquee-container {
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            background: #1a0000;
+            border-bottom: 1px solid var(--term-red);
+            position: relative;
+        }
+
+        .marquee-content {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marquee 25s linear infinite;
+            color: var(--term-red);
+            font-weight: bold;
+            letter-spacing: 2px;
+            font-size: 0.8rem;
+        }
+
+        @keyframes marquee {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-100%, 0); }
+        }
+
+        /* --- INTERACTIVE ELEMENTS --- */
+        .glitch-btn {
+            border: 1px solid var(--term-green);
+            background: rgba(0, 50, 0, 0.3);
+            transition: all 0.1s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+        .glitch-btn:active {
+            transform: scale(0.98);
+            background: var(--term-green);
+            color: black;
+        }
+
+        .threat-card {
+            border: 1px solid #333;
+            background: #050505;
+            transition: border-color 0.3s;
+        }
+        .threat-card:hover {
+            border-color: var(--term-red);
+        }
+
+        /* --- ACCORDION STYLING --- */
+        details summary {
+            list-style: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        details summary::-webkit-details-marker {
+            display: none;
+        }
+        details[open] summary {
+            background: rgba(51, 255, 0, 0.1);
+            color: white;
+            border-left: 4px solid var(--term-green);
+        }
+        
+        /* --- UTILS --- */
+        .redacted {
+            background: var(--term-green);
+            color: var(--term-green);
+            padding: 0 4px;
+            cursor: help;
+        }
+        .redacted:hover {
+            background: transparent;
+            color: white;
+            text-decoration: line-through;
+        }
+
+        .hidden-section {
+            display: none;
+        }
+
+        /* Mobile specific adjustments */
+        @media (max-width: 640px) {
+            .marquee-content { font-size: 0.7rem; animation-duration: 15s; }
+            h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body class="flicker">
+
+    <div class="crt-overlay"></div>
+
+    <!-- INFINITE MARQUEE BANNER -->
+    <div class="marquee-container sticky top-0 z-50">
+        <div class="marquee-content">
+            ⚠ EMERGENCY BROADCAST SYSTEM // DEFCON 4 ACTIVE // BIOLOGICAL CONTAINMENT FAILURE IN SECTORS [REDACTED] // DO NOT APPROACH INFECTED // CONPLAN 8888 IN EFFECT // REMAIN INDOORS // SIGNAL STRENGTH: FALLING...
+        </div>
+    </div>
+
+    <!-- MAIN HEADER -->
+    <header class="p-4 border-b border-gray-800 bg-black/90 sticky top-6 z-40 backdrop-blur">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div>
+                <h1 class="font-bold tracking-tighter text-white">G.C.P.A. ARCHIVE</h1>
+                <p class="text-[0.6rem] text-red-500 uppercase tracking-widest">Global Bio-Threat Protocol v9.2</p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="showSection('home')" class="text-[0.65rem] border border-gray-700 px-2 py-1 hover:bg-gray-800 text-gray-400">DASHBOARD</button>
+                <button onclick="showSection('calculator')" class="text-[0.65rem] border border-red-900 px-2 py-1 hover:bg-red-900/20 text-red-500">SURVIVAL_CALC</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-4 pb-20">
+
+        <!-- ==================== HOME DASHBOARD ==================== -->
+        <div id="home" class="space-y-12">
+            
+            <!-- Intro Text -->
+            <section class="mt-8 border-l-2 border-red-600 pl-4 py-2">
+                <p class="text-gray-400 text-sm md:text-base leading-relaxed">
+                    This terminal provides <span class="text-white">Level 4 Clearance</span> access to sovereign contingency plans. Data is aggregated from intercepted government signals and recovered military drives.
+                </p>
+            </section>
+
+            <!-- THREAT IDENTIFICATION GRID -->
+            <section>
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-bold text-white border-b border-gray-800 pb-1 w-full">>> THREAT IDENTIFICATION</h2>
+                </div>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <!-- Walker -->
+                    <button onclick="showSection('detail-walker')" class="threat-card p-4 text-center group">
+                        <div class="text-3xl mb-2 grayscale group-hover:grayscale-0">🧟</div>
+                        <h3 class="text-xs font-bold text-white mb-1">TYPE 01</h3>
+                        <p class="text-[0.6rem] text-gray-500">STANDARD WALKER</p>
+                        <div class="mt-2 text-[0.5rem] bg-gray-900 text-green-500 py-1 border border-gray-800">VIEW FILE</div>
+                    </button>
+
+                    <!-- Runner -->
+                    <button onclick="showSection('detail-runner')" class="threat-card p-4 text-center group">
+                        <div class="text-3xl mb-2 grayscale group-hover:grayscale-0">🏃</div>
+                        <h3 class="text-xs font-bold text-red-500 mb-1">TYPE 02</h3>
+                        <p class="text-[0.6rem] text-gray-500">INFECTED RUNNER</p>
+                        <div class="mt-2 text-[0.5rem] bg-gray-900 text-red-500 py-1 border border-gray-800">VIEW FILE</div>
+                    </button>
+
+                    <!-- Lurker -->
+                    <button onclick="showSection('detail-lurker')" class="threat-card p-4 text-center group">
+                        <div class="text-3xl mb-2 grayscale group-hover:grayscale-0">👁️</div>
+                        <h3 class="text-xs font-bold text-white mb-1">TYPE 03</h3>
+                        <p class="text-[0.6rem] text-gray-500">SILENT LURKER</p>
+                        <div class="mt-2 text-[0.5rem] bg-gray-900 text-green-500 py-1 border border-gray-800">VIEW FILE</div>
+                    </button>
+
+                    <!-- Tank -->
+                    <button onclick="showSection('detail-tank')" class="threat-card p-4 text-center group">
+                        <div class="text-3xl mb-2 grayscale group-hover:grayscale-0">🦍</div>
+                        <h3 class="text-xs font-bold text-white mb-1">TYPE 04</h3>
+                        <p class="text-[0.6rem] text-gray-500">HEAVY BRUTE</p>
+                        <div class="mt-2 text-[0.5rem] bg-gray-900 text-green-500 py-1 border border-gray-800">VIEW FILE</div>
+                    </button>
+                </div>
+            </section>
+
+            <!-- COUNTRY PROTOCOLS -->
+            <section>
+                <h2 class="text-lg font-bold text-white border-b border-gray-800 pb-1 mb-4 w-full">>> NATIONAL PROTOCOLS (12 FOUND)</h2>
+                <div class="space-y-2">
+                    
+                    <!-- USA -->
+                    <details class="bg-gray-900/50 border border-gray-800">
+                        <summary class="p-4 font-bold text-sm flex justify-between">
+                            <span>🇺🇸 UNITED STATES</span>
+                            <span class="text-xs text-gray-500">[CONPLAN 8888]</span>
+                        </summary>
+                        <div class="p-4 text-xs text-gray-300 border-t border-gray-800">
+                            <p class="mb-2"><strong>Strategy:</strong> "Dominance & Sanitization". Establish the "Strategic Triangle" (DC, Omaha, Colorado). Authorizes tactical nuclear strikes on population centers with >70% infection.</p>
+                            <p class="mb-2 text-red-400">Note: The "Great Plains" are designated as a primary kill-zone.</p>
+                            <a href="https://ia800900.us.archive.org/32/items/CONPLAN8888/CONPLAN%208888.pdf" target="_blank" class="text-blue-500 underline block mt-2">ACCESS SOURCE DOC</a>
+                        </div>
+                    </details>
+
+                    <!-- UK -->
+                    <details class="bg-gray-900/50 border border-gray-800">
+                        <summary class="p-4 font-bold text-sm flex justify-between">
+                            <span>🇬🇧 UNITED KINGDOM</span>
+                            <span class="text-xs text-gray-500">[OP TEMPERER]</span>
+                        </summary>
+                        <div class="p-4 text-xs text-gray-300 border-t border-gray-800">
+                            <p class="mb-2"><strong>Strategy:</strong> "Island Fortress". Immediate collapse of Channel Tunnel. Royal Navy blockade. Army supports police in urban lockdowns.</p>
+                            <a href="https://www.gov.uk/government/publications/the-uk-government-resilience-framework" target="_blank" class="text-blue-500 underline block mt-2">ACCESS GOV.UK</a>
+                        </div>
+                    </details>
+
+                    <!-- SWITZERLAND -->
+                    <details class="bg-gray-900/50 border border-gray-800">
+                        <summary class="p-4 font-bold text-sm flex justify-between">
+                            <span>🇨🇭 SWITZERLAND</span>
+                            <span class="text-xs text-gray-500">[REDOUBT]</span>
+                        </summary>
+                        <div class="p-4 text-xs text-gray-300 border-t border-gray-800">
+                            <p class="mb-2"><strong>Strategy:</strong> "Subterranean Retreat". Population moves to nuclear bunkers (114% capacity). Bridges/Tunnels rigged for demolition.</p>
+                            <a href="https://www.babs.admin.ch/en/home.html" target="_blank" class="text-blue-500 underline block mt-2">ACCESS CIVIL PROTECTION</a>
+                        </div>
+                    </details>
+
+                    <!-- CANADA -->
+                    <details class="bg-gray-900/50 border border-gray-800">
+                        <summary class="p-4 font-bold text-sm flex justify-between">
+                            <span>🇨🇦 CANADA</span>
+                            <span class="text-xs text-gray-500">[FERP]</span>
+                        </summary>
+                        <div class="p-4 text-xs text-gray-300 border-t border-gray-800">
+                            <p class="mb-2"><strong>Strategy:</strong> "Winter Attrition". Retreat to Northern Shield. Rely on sub-zero temps to freeze bio-mass. Ground all flights.</p>
+                            <a href="https://www.publicsafety.gc.ca/cnt/rsrcs/pblctns/mrgncy-rspns-pln/index-en.aspx" target="_blank" class="text-blue-500 underline block mt-2">ACCESS PUBLIC SAFETY</a>
+                        </div>
+                    </details>
+
+                    <!-- AUSTRALIA -->
+                    <details class="bg-gray-900/50 border border-gray-800">
+                        <summary class="p-4 font-bold text-sm flex justify-between">
+                            <span>🇦🇺 AUSTRALIA</span>
+                            <span class="text-xs text-gray-500">[BIOSECURITY]</span>
+                        </summary>
+                        <div class="p-4 text-xs text-gray-300 border-t border-gray-800">
+                            <p class="mb-2"><strong>Strategy:</strong> "Outback Dispersal". Cities evacuate inland. Extreme heat accelerates decay. Total maritime exclusion zone.</p>
+                            <a href="https://www.legislation.gov.au/Details/C2015A00061" target="_blank" class="text-blue-500 underline block mt-2">ACCESS LEGISLATION</a>
+                        </div>
+                    </details>
+
+                    <!-- NORTH KOREA -->
+                    <details class="bg-gray-900/50 border border-gray-800">
+                        <summary class="p-4 font-bold text-sm flex justify-between">
+                            <span>🇰🇵 NORTH KOREA</span>
+                            <span class="text-xs text-gray-500">[STATE SECRET]</span>
+                        </summary>
+                        <div class="p-4 text-xs text-gray-300 border-t border-gray-800">
+                            <p class="mb-2"><strong>Strategy:</strong> "Total Extraction". Intelligence suggests mandatory removal of teeth for lower class. Elite retreat to deep bunkers.</p>
+                            <p class="text-red-500">Status: The DMZ minefield effectively seals the southern border.</p>
+                        </div>
+                    </details>
+
+                    <!-- ISRAEL -->
+                    <details class="bg-gray-900/50 border border-gray-800">
+                        <summary class="p-4 font-bold text-sm flex justify-between">
+                            <span>🇮🇱 ISRAEL</span>
+                            <span class="text-xs text-gray-500">[IRON WALL]</span>
+                        </summary>
+                        <div class="p-4 text-xs text-gray-300 border-t border-gray-800">
+                            <p class="mb-2"><strong>Strategy:</strong> "Perimeter Lockdown". Utilization of existing border walls and checkpoints. Mandatory conscription ensures 100% armed populace.</p>
+                            <a href="https://www.oref.org.il/en" target="_blank" class="text-blue-500 underline block mt-2">ACCESS HOME FRONT</a>
+                        </div>
+                    </details>
+
+                    <!-- JAPAN -->
+                    <details class="bg-gray-900/50 border border-gray-800">
+                        <summary class="p-4 font-bold text-sm flex justify-between">
+                            <span>🇯🇵 JAPAN</span>
+                            <span class="text-xs text-gray-500">[MARITIME]</span>
+                        </summary>
+                        <div class="p-4 text-xs text-gray-300 border-t border-gray-800">
+                            <p class="mb-2"><strong>Strategy:</strong> "Offshore Evacuation". High population density makes land defense impossible. Retreat to JSDF flotillas and artificial islands.</p>
+                             <a href="https://www.mod.go.jp/en/" target="_blank" class="text-blue-500 underline block mt-2">ACCESS MINISTRY OF DEFENSE</a>
+                        </div>
+                    </details>
+
+                    <!-- RUSSIA -->
+                    <details class="bg-gray-900/50 border border-gray-800">
+                        <summary class="p-4 font-bold text-sm flex justify-between">
+                            <span>🇷🇺 RUSSIA</span>
+                            <span class="text-xs text-gray-500">[ZATO]</span>
+                        </summary>
+                        <div class="p-4 text-xs text-gray-300 border-t border-gray-800">
+                            <p class="mb-2"><strong>Strategy:</strong> "Closed Cities". Retreat to Soviet-era secret nuclear cities (ZATO) which are already walled and self-sufficient. Scorched earth policy for Moscow.</p>
+                            <a href="https://en.mchs.gov.ru/en" target="_blank" class="text-blue-500 underline block mt-2">ACCESS EMERCOM</a>
+                        </div>
+                    </details>
+
+                    <!-- ICELAND -->
+                    <details class="bg-gray-900/50 border border-gray-800">
+                        <summary class="p-4 font-bold text-sm flex justify-between">
+                            <span>🇮🇸 ICELAND</span>
+                            <span class="text-xs text-gray-500">[GEOTHERMAL]</span>
+                        </summary>
+                        <div class="p-4 text-xs text-gray-300 border-t border-gray-800">
+                            <p class="mb-2"><strong>Strategy:</strong> "Energy Independence". Can survive indefinitely without imports due to geothermal power. Zero tolerance for incoming ships.</p>
+                            <a href="https://www.government.is/topics/public-safety-and-security/civil-protection-in-iceland/" target="_blank" class="text-blue-500 underline block mt-2">ACCESS GOV.IS</a>
+                        </div>
+                    </details>
+
+                    <!-- NEW ZEALAND -->
+                    <details class="bg-gray-900/50 border border-gray-800">
+                        <summary class="p-4 font-bold text-sm flex justify-between">
+                            <span>🇳🇿 NEW ZEALAND</span>
+                            <span class="text-xs text-gray-500">[LIFEBOAT]</span>
+                        </summary>
+                        <div class="p-4 text-xs text-gray-300 border-t border-gray-800">
+                            <p class="mb-2"><strong>Strategy:</strong> "Global Lifeboat". Geographic isolation allows for complete closure. High ratio of private bunkers owned by foreign billionaires.</p>
+                             <a href="https://www.civildefence.govt.nz/" target="_blank" class="text-blue-500 underline block mt-2">ACCESS CIVIL DEFENCE</a>
+                        </div>
+                    </details>
+
+                    <!-- MADAGASCAR -->
+                    <details class="bg-gray-900/50 border border-gray-800">
+                        <summary class="p-4 font-bold text-sm flex justify-between">
+                            <span>🇲🇬 MADAGASCAR</span>
+                            <span class="text-xs text-gray-500">[PLAGUE]</span>
+                        </summary>
+                        <div class="p-4 text-xs text-gray-300 border-t border-gray-800">
+                            <p class="mb-2"><strong>Strategy:</strong> "Port Closure". Highly experienced in Bubonic Plague containment. Rapid shutdown of all docks and airports.</p>
+                            <a href="https://www.who.int/emergencies/disease/plague/madagascar/en/" target="_blank" class="text-blue-500 underline block mt-2">ACCESS WHO REPORT</a>
+                        </div>
+                    </details>
+
+                </div>
+            </section>
+        </div>
+
+        <!-- ==================== DETAIL PAGES ==================== -->
+
+        <!-- FILE: WALKER -->
+        <div id="detail-walker" class="hidden-section space-y-6">
+            <button onclick="showSection('home')" class="text-green-500 text-xs hover:text-white border border-green-900 px-3 py-2"><< RETURN TO ARCHIVE</button>
+            <div class="border-l-4 border-green-500 pl-4">
+                <h2 class="text-3xl font-bold text-white">TYPE 01: WALKER</h2>
+                <p class="text-xs text-gray-500">THREAT LEVEL: LOW (INDIVIDUAL) / EXTREME (SWARM)</p>
+            </div>
+            
+            <div class="bg-gray-900 p-4 border border-gray-800">
+                <h3 class="text-sm font-bold text-white mb-2 uppercase border-b border-gray-700 pb-1">Origin & Intel</h3>
+                <p class="text-xs text-gray-400 mb-4">First documented in the <strong>Pittsburgh Incident (1968)</strong>. Subjects show zero higher brain function. The virus reanimates only the brain stem, driving basic motor skills and hunger.</p>
+                
+                <h3 class="text-sm font-bold text-white mb-2 uppercase border-b border-gray-700 pb-1">Physiology</h3>
+                <ul class="text-xs text-gray-400 space-y-2">
+                    <li>> <strong>Coagulation:</strong> Blood is gelatinous. They do not bleed out.</li>
+                    <li>> <strong>Freeze Point:</strong> Muscle tissue freezes at -5°C.</li>
+                    <li>> <strong>Lifespan:</strong> 3-5 years depending on decay rate.</li>
+                </ul>
+            </div>
+            <div class="bg-red-900/20 p-4 border border-red-900">
+                <p class="text-xs text-red-400 font-bold">TACTICAL ADVICE:</p>
+                <p class="text-xs text-gray-300">"Aim for the head. Fire is psychologically effective but physically slow. A burning walker is still a threat for up to 20 minutes."</p>
+            </div>
+        </div>
+
+        <!-- FILE: RUNNER -->
+        <div id="detail-runner" class="hidden-section space-y-6">
+            <button onclick="showSection('home')" class="text-green-500 text-xs hover:text-white border border-green-900 px-3 py-2"><< RETURN TO ARCHIVE</button>
+            <div class="border-l-4 border-red-500 pl-4">
+                <h2 class="text-3xl font-bold text-white">TYPE 02: RUNNER</h2>
+                <p class="text-xs text-red-500">THREAT LEVEL: CRITICAL</p>
+            </div>
+            
+            <div class="bg-gray-900 p-4 border border-gray-800">
+                <h3 class="text-sm font-bold text-white mb-2 uppercase border-b border-gray-700 pb-1">Origin & Intel</h3>
+                <p class="text-xs text-gray-400 mb-4">Unlike walkers, these hosts are <strong>alive</strong>. Identified during the Cambridge Lab Breach. The virus induces a permanent state of adrenaline-fueled rage. They do not feel pain.</p>
+                
+                <h3 class="text-sm font-bold text-white mb-2 uppercase border-b border-gray-700 pb-1">Physiology</h3>
+                <ul class="text-xs text-gray-400 space-y-2">
+                    <li>> <strong>Speed:</strong> Can sustain 25km/h sprints.</li>
+                    <li>> <strong>Metabolism:</strong> Extremely high caloric burn.</li>
+                    <li>> <strong>Weakness:</strong> Starvation. They die within 20-30 days without food.</li>
+                </ul>
+            </div>
+            <div class="bg-red-900/20 p-4 border border-red-900">
+                <p class="text-xs text-red-400 font-bold">TACTICAL ADVICE:</p>
+                <p class="text-xs text-gray-300">"Wait them out. Fortify high ground and remove stairs. They cannot climb effectively. Do not engage in open ground."</p>
+            </div>
+        </div>
+
+        <!-- FILE: LURKER -->
+        <div id="detail-lurker" class="hidden-section space-y-6">
+            <button onclick="showSection('home')" class="text-green-500 text-xs hover:text-white border border-green-900 px-3 py-2"><< RETURN TO ARCHIVE</button>
+            <div class="border-l-4 border-gray-500 pl-4">
+                <h2 class="text-3xl font-bold text-white">TYPE 03: LURKER</h2>
+                <p class="text-xs text-gray-500">THREAT LEVEL: HIGH (AMBUSH)</p>
+            </div>
+            
+            <div class="bg-gray-900 p-4 border border-gray-800">
+                <h3 class="text-sm font-bold text-white mb-2 uppercase border-b border-gray-700 pb-1">Origin & Intel</h3>
+                <p class="text-xs text-gray-400 mb-4">Subjects enter a dormant, low-energy state to preserve tissue. They often hide in closets, vents, or basements, activating only when prey is within 3 meters.</p>
+                
+                <h3 class="text-sm font-bold text-white mb-2 uppercase border-b border-gray-700 pb-1">Physiology</h3>
+                <ul class="text-xs text-gray-400 space-y-2">
+                    <li>> <strong>Vocalization:</strong> Zero. They do not moan.</li>
+                    <li>> <strong>Reaction Time:</strong> Instantaneous upon waking.</li>
+                    <li>> <strong>Environment:</strong> Prefer dark, enclosed spaces.</li>
+                </ul>
+            </div>
+            <div class="bg-red-900/20 p-4 border border-red-900">
+                <p class="text-xs text-red-400 font-bold">TACTICAL ADVICE:</p>
+                <p class="text-xs text-gray-300">"Check your corners. Use flashbangs or loud noise to trigger them before entering a room. Never clear a building alone."</p>
+            </div>
+        </div>
+
+        <!-- FILE: TANK -->
+        <div id="detail-tank" class="hidden-section space-y-6">
+            <button onclick="showSection('home')" class="text-green-500 text-xs hover:text-white border border-green-900 px-3 py-2"><< RETURN TO ARCHIVE</button>
+            <div class="border-l-4 border-white pl-4">
+                <h2 class="text-3xl font-bold text-white">TYPE 04: BRUTE</h2>
+                <p class="text-xs text-white">THREAT LEVEL: AVOID AT ALL COSTS</p>
+            </div>
+            
+            <div class="bg-gray-900 p-4 border border-gray-800">
+                <h3 class="text-sm font-bold text-white mb-2 uppercase border-b border-gray-700 pb-1">Origin & Intel</h3>
+                <p class="text-xs text-gray-400 mb-4">Rare mutation, possibly linked to steroid-abuse subjects or experimental strains. Calcified bone growth creates natural dermal armor.</p>
+                
+                <h3 class="text-sm font-bold text-white mb-2 uppercase border-b border-gray-700 pb-1">Physiology</h3>
+                <ul class="text-xs text-gray-400 space-y-2">
+                    <li>> <strong>Armor:</strong> Bullet resistant skin.</li>
+                    <li>> <strong>Strength:</strong> Can breach reinforced doors.</li>
+                    <li>> <strong>Pain Threshold:</strong> Non-existent.</li>
+                </ul>
+            </div>
+            <div class="bg-red-900/20 p-4 border border-red-900">
+                <p class="text-xs text-red-400 font-bold">TACTICAL ADVICE:</p>
+                <p class="text-xs text-gray-300">"Small arms fire is useless. Use fire, explosives, or .50 cal rounds. If you lack heavy ordnance, run."</p>
+            </div>
+        </div>
+
+        <!-- ==================== CALCULATOR ==================== -->
+        <div id="calculator" class="hidden-section">
+            <button onclick="showSection('home')" class="text-green-500 text-xs hover:text-white border border-green-900 px-3 py-2 mb-6"><< RETURN TO ARCHIVE</button>
+            
+            <div class="border border-green-800 bg-black p-4">
+                <h2 class="text-xl font-bold text-white mb-4 border-b border-gray-800 pb-2">SURVIVAL ALGORITHM</h2>
+                
+                <div class="space-y-4 mb-6">
+                    <div>
+                        <label class="block text-xs text-green-500 mb-1">LOCATION DENSITY:</label>
+                        <select id="calc-loc" class="w-full bg-gray-900 border border-gray-700 text-white p-2 text-xs">
+                            <option value="10">Metropolis (High)</option>
+                            <option value="50">Suburbs (Med)</option>
+                            <option value="90">Rural (Low)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-green-500 mb-1">SUPPLIES:</label>
+                        <select id="calc-sup" class="w-full bg-gray-900 border border-gray-700 text-white p-2 text-xs">
+                            <option value="0">None</option>
+                            <option value="30">1 Week</option>
+                            <option value="60">1 Month+</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button onclick="calcSurvival()" class="w-full bg-green-900/30 border border-green-500 text-green-500 py-3 font-bold hover:bg-green-500 hover:text-black transition">CALCULATE ODDS</button>
+
+                <div id="calc-result" class="hidden mt-6 text-center border border-gray-800 p-4">
+                    <p class="text-xs text-gray-500">CHANCE OF SURVIVAL:</p>
+                    <p id="calc-perc" class="text-4xl font-bold text-white mt-2">0%</p>
+                    <p id="calc-msg" class="text-xs text-red-500 mt-2">ANALYZING...</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Simple Single Page App Router
+        function showSection(id) {
+            // Hide all sections
+            const sections = ['home', 'calculator', 'detail-walker', 'detail-runner', 'detail-lurker', 'detail-tank'];
+            sections.forEach(sec => {
+                const el = document.getElementById(sec);
+                if(el) el.style.display = 'none';
+            });
+
+            // Show target
+            const target = document.getElementById(id);
+            if(target) {
+                target.style.display = 'block';
+                window.scrollTo(0,0);
+            }
+        }
+
+        // Calculator Logic
+        function calcSurvival() {
+            const loc = parseInt(document.getElementById('calc-loc').value);
+            const sup = parseInt(document.getElementById('calc-sup').value);
+            
+            // Chaos factor
+            const chaos = Math.floor(Math.random() * 20) - 10;
+            
+            let result = Math.floor((loc + sup) / 1.6) + chaos;
+            if (result > 99) result = 99;
+            if (result < 0) result = 0;
+
+            document.getElementById('calc-result').style.display = 'block';
+            document.getElementById('calc-perc').innerText = result + "%";
+            
+            const msg = document.getElementById('calc-msg');
+            if(result < 30) {
+                msg.innerText = "OUTCOME: TERMINAL. RECOMMEND EVAC.";
+                msg.className = "text-xs text-red-500 mt-2";
+            } else if (result < 70) {
+                msg.innerText = "OUTCOME: UNCERTAIN. FORTIFY POSITION.";
+                msg.className = "text-xs text-yellow-500 mt-2";
+            } else {
+                msg.innerText = "OUTCOME: FAVORABLE. MAINTAIN SILENCE.";
+                msg.className = "text-xs text-green-500 mt-2";
+            }
+        }
+
+        // Init
+        showSection('home');
+    </script>
+</body>
+</html>
+
+
